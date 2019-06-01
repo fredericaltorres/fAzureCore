@@ -73,11 +73,12 @@ namespace AzureServiceBusSubHelper
             }
         }
 
-        public async Task PublishAsync(string messageBody)
+        public async Task PublishAsync(string messageBody, string messageId = null)
         {
             var message = new Message(Encoding.UTF8.GetBytes(messageBody));
-            message.MessageId = Guid.NewGuid().ToString();
-            Console.WriteLine($"Publishing {messageBody}, messageId:{message.MessageId}");            
+            if (messageId == null)
+                messageId = Guid.NewGuid().ToString();
+            message.MessageId = messageId;
             await _topicClient.SendAsync(message);
         }
 

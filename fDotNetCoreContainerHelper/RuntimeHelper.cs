@@ -19,6 +19,43 @@ namespace fDotNetCoreContainerHelper
             return s.ToString().TrimEnd();
         }
 
+        public static int GetCommandLineParameterInt(string name, string[] args)
+        {
+            var v = GetCommandLineParameterString(name, args);
+            int i;
+            if (int.TryParse(v, out i))
+                return i;
+            throw new InvalidProgramException("Cannot find parameter:{name} in command line or environment");
+        }
+
+        public static bool GetCommandLineParameterBool(string name, string[] args)
+        {
+            var v = GetCommandLineParameterString(name, args);
+            bool i;
+            if (bool.TryParse(v, out i))
+                return i;
+            throw new InvalidProgramException("Cannot find parameter:{name} in command line or environment");
+        }
+
+        public static string GetCommandLineParameterString(string name, string[] args)
+        {
+            var envName = name;
+            while(envName.StartsWith("-"))
+                envName = envName.Substring(1);
+
+            var v = Environment.GetEnvironmentVariable(envName);
+            if (!string.IsNullOrEmpty(v))
+                return v;
+            for(var i=0; i<args.Length; i++)
+            {
+                if(args[i] == name && i+1 < args.Length)
+                {
+                    return args[i+1];
+                }
+            }
+            return null;
+        }
+
         public static string GetContextInformation()
         {
             var s = new StringBuilder();
