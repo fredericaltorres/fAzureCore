@@ -22,6 +22,12 @@ namespace fAzureHelper
                 await this.NotifyAsync(message, type, sendToConsole);
         }
 
+        public string Notify(string message, TraceLevel type = TraceLevel.Info, bool sendToConsole = true)
+        {
+            // Wait for the call so the notification are logged in the right order
+            return NotifyAsync(message, type, sendToConsole).GetAwaiter().GetResult();
+        }
+
         public async Task<string> NotifyAsync(string message, TraceLevel type = TraceLevel.Info, bool sendToConsole = true)
         {
             var systemActivity = new SystemActivity(message, type);
