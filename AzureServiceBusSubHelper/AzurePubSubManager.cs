@@ -27,6 +27,12 @@ namespace AzureServiceBusSubHelper
 
         private OnMessageReceived _onMessageReceived;
 
+        public long MessagePublishedCounter = 0;
+        public DateTime MessagePublishedTimeStamp;
+
+        public long MessageReceivedCounter = 0;
+        public DateTime MessageReceivedTimeStamp;
+
         public delegate bool OnMessageReceived(string messageBody, string messageId, long sequenceNumber);
 
         public AzurePubSubManager(AzurePubSubManagerType type, string connectionString, string topic, string subscriptionName = null, bool mustCreateSubscription = true)
@@ -73,8 +79,27 @@ namespace AzureServiceBusSubHelper
             }
         }
 
+        public string GetReceivedInformation()
+        {
+            var duration = (DateTime.UtcNow - MessageReceivedTimeStamp).TotalSeconds;
+            var messagePerSecond = MessageReceivedCounter / duration;
+            return $"{MessageReceivedCounter} messages received {duration:0.0} seconds, {messagePerSecond:0.0} message/S";
+        }
+
+        public string GetSendInformation()
+        {
+            var duration = (DateTime.UtcNow - MessagePublishedTimeStamp).TotalSeconds;
+            var messagePerSecond = MessagePublishedCounter / duration;
+            return $"{MessagePublishedCounter} messages published {duration:0.0} seconds, {messagePerSecond:0.0} message/S";
+        }
+
         public async Task PublishAsync(string messageBody, string messageId = null)
         {
+            if(MessagePublishedCounter == 0) // Set MessageSentTimeStamp on the first message that we send
+                MessagePublishedTimeStamp = DateTime.UtcNow;
+
+            MessagePublishedCounter++;
+
             var message = new Message(Encoding.UTF8.GetBytes(messageBody));
             if (messageId == null)
                 messageId = Guid.NewGuid().ToString();
@@ -113,6 +138,11 @@ namespace AzureServiceBusSubHelper
             var messageBody = Encoding.UTF8.GetString(message.Body);
             var sequenceNumber = message.SystemProperties.SequenceNumber;
             var messageId = message.MessageId;
+
+            if (MessageReceivedCounter == 0) // Set MessageSentTimeStamp on the first message that we send
+                MessageReceivedTimeStamp = DateTime.UtcNow;
+
+            MessageReceivedCounter++;
 
             // Console.WriteLine($"Received message: MessageId:{messageId}, SequenceNumber:{sequenceNumber} Body:{messageBody}");
 
