@@ -7,14 +7,12 @@ namespace fAzureHelper
     public class SystemActivity : SystemActivityEnvironment
     {
         public string AppName { get; set; }
-        public string AppLocation { get; set; }
         public string Message { get; set; }
         public DateTime UtcDateTime { get; set; }
 
         public SystemActivity(string message, TraceLevel type) : base()
         {
             this.UtcDateTime = DateTime.UtcNow;
-            this.AppLocation = Assembly.GetEntryAssembly().Location;
             this.AppName = Assembly.GetEntryAssembly().FullName;
             this.Type = type;
             this.Message = message;
