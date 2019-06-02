@@ -1,9 +1,6 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.Table;
+﻿using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +44,7 @@ namespace fAzureHelper
             _table.CreateIfNotExistsAsync().GetAwaiter().GetResult();
         }
 
-        public async Task Insert(ITableEntity entity)
+        public async Task InsertAsync(ITableEntity entity)
         {
             var op = TableOperation.Insert(entity);
             await _table.ExecuteAsync(op);
