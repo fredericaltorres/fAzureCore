@@ -20,8 +20,12 @@ namespace fAzureHelper
 
         public string ToJSON()
         {
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
-            return json;
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
+        }
+        public static SystemActivity FromJson(string json)
+        {
+            var sa = Newtonsoft.Json.JsonConvert.DeserializeObject<SystemActivity>(json);
+            return sa;
         }
     }
 }
