@@ -56,30 +56,47 @@ namespace fDotNetCoreContainerHelper
             return null;
         }
 
-        public static string GetContextInformation()
+
+        public static Dictionary<string, object> GetContextInformationDictionary()
         {
-            var s = new StringBuilder();
-            s.Append($"CommandLine:{Environment.CommandLine}").AppendLine();
-            s.Append($"CurrentDirectory:{Environment.CurrentDirectory}").AppendLine();
-            s.Append($"GetCommandLineArgs:{ListToString(Environment.GetCommandLineArgs().ToList())}").AppendLine();
-            s.Append($"Is64BitOperatingSystem:{Environment.Is64BitOperatingSystem}").AppendLine();
-            s.Append($"Is64BitProcess:{Environment.Is64BitProcess}").AppendLine();
-            s.Append($"MachineName:{Environment.MachineName}").AppendLine();
-            s.Append($"UserDomainName:{Environment.UserDomainName}").AppendLine();
-            s.Append($"UserName:{Environment.UserName}").AppendLine();
-            s.Append($"Common Language Runtime Version:{Environment.Version}").AppendLine();
-            s.Append($"OSVersion:{Environment.OSVersion}").AppendLine();
-            s.Append($"SystemDirectory:{Environment.SystemDirectory}").AppendLine();
-            s.Append($"NewLine.Length:{Environment.NewLine.Length}").AppendLine();
-            s.Append($"IsRunningContainerMode:{IsRunningContainerMode()}").AppendLine();
+            var d = new Dictionary<string, object>();
+            d.Add("CommandLine", Environment.CommandLine);
+            d.Add("CurrentDirectory", Environment.CurrentDirectory);
+            d.Add("GetCommandLineArgs", ListToString(Environment.GetCommandLineArgs().ToList()));
+            d.Add("Is64BitOperatingSystem", Environment.Is64BitOperatingSystem);
+            d.Add("Is64BitProcess", Environment.Is64BitProcess);
+            d.Add("MachineName", Environment.MachineName);
+            d.Add("UserDomainName", Environment.UserDomainName);
+            d.Add("UserName", Environment.UserName);
+            d.Add("Common Language Runtime Version", Environment.Version);
+            d.Add("OSVersion", Environment.OSVersion);
+            d.Add("SystemDirectory", Environment.SystemDirectory);
+            d.Add("NewLine.Length", Environment.NewLine.Length);
+            d.Add("IsRunningContainerMode", IsRunningContainerMode());
 
-
-            foreach(DictionaryEntry e in Environment.GetEnvironmentVariables())
+            foreach (DictionaryEntry e in Environment.GetEnvironmentVariables())
             {
-                s.Append($"{e.Key}:{e.Value}").AppendLine();
+                d.Add(e.Key.ToString(), e.Value);
             }
+            return d;
+        }
 
-            return s.ToString();
+        public static string GetContextInformation(bool json = false)
+        {
+            var d = GetContextInformationDictionary();
+            
+            if(json)
+            {
+                var jsonContent = Newtonsoft.Json.JsonConvert.SerializeObject(d, Newtonsoft.Json.Formatting.Indented);
+                return jsonContent;
+            }
+            else
+            {
+                var s = new StringBuilder();
+                foreach(var e in d)
+                    s.Append($"{e.Key}: {e.Value}").AppendLine();
+                return s.ToString();
+            }
         }
 
         public static bool IsRunningContainerMode()
@@ -92,8 +109,18 @@ namespace fDotNetCoreContainerHelper
             return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         }
 
+        public static string _AppPath = null;
+
+        // Allow to set the path, needed for web app versus console app
+        public static void SetAppPath(string path)
+        {
+            _AppPath = path;
+        }
+
         public static string GetAppPath()
         {
+            if (_AppPath != null)
+                return _AppPath;
             return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         }
 
@@ -121,11 +148,13 @@ namespace fDotNetCoreContainerHelper
         const string APP_SETTING_JSON_FILE_NAME = "appsettings.json";
 
         private static IConfigurationRoot _configurationRoot = null;
+        
 
         public static IConfigurationRoot BuildAppSettingsJsonConfiguration()
         {
             if (_configurationRoot == null)
             {
+                var p = RuntimeHelper.GetAppPath();
                 // Console.WriteLine($"Reading configuration {RuntimeHelper.GetAppSettingsJsonFile()}");
                 var builder = new ConfigurationBuilder()
                                 .SetBasePath(RuntimeHelper.GetAppPath())

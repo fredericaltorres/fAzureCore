@@ -7,7 +7,7 @@ namespace fAzureHelper
     {
         public string MachineName { get; set; }
         public string UserName { get; set; }
-        public TraceLevel Type { get; set; }
+        public SystemActivityType Type { get; set; }
         public string CurrentDirectory;
         public bool Is64BitOperatingSystem;
         public bool Is64BitProcess;
